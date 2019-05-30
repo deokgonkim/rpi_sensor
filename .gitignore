@@ -1,0 +1,4 @@
+3rdparty/arduPi/cooking
+src/nohup.out
+src/sendmq2.log
+src/test_dht11
