@@ -8,8 +8,12 @@ from subprocess import check_output
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('server'))
 channel = connection.channel()
-channel.queue_declare(queue='temperature')
-channel.queue_declare(queue='humidity')
+
+channel.exchange_declare(exchange='sensor', exchange_type='fanout')
+
+def Message(agentId, dataName, dataType, value):
+    return '{agentId},{dataName},{dataType},{value}'.format(agentId=agentId,
+            dataName=dataName, dataType=dataType, value=value)
 
 while True:
     now = datetime.datetime.now()
@@ -27,12 +31,14 @@ while True:
     # If this happens try again!
     if humidity is not None and temperature is not None:
         print('{} Temp={:0.1f}*C  Humidity={:0.1f}%'.format(now, temperature, humidity))
-        channel.basic_publish(exchange='',
-                              routing_key='temperature',
-                              body='{:0.1f}'.format(temperature))
-        channel.basic_publish(exchange='',
-                              routing_key='humidity',
-                              body='{:0.1f}'.format(humidity))
+        temperatureMessage = Message('home.RPi.DHT11', 'temperature', 'gauge', temperature)
+        humidityMessage = Message('home.RPi.DHT11', 'humidity', 'gauge', humidity)
+        channel.basic_publish(exchange='sensor',
+                              routing_key='',
+                              body=temperatureMessage)
+        channel.basic_publish(exchange='sensor',
+                              routing_key='',
+                              body=humidityMessage)
     else:
         print('Failed to get reading. Try again!')
     time.sleep(5)

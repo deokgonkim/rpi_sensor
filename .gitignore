@@ -1,4 +1,5 @@
 3rdparty/arduPi/cooking
 src/nohup.out
 src/sendmq2.log
+src/receive_ircommand.log
 src/test_dht11
