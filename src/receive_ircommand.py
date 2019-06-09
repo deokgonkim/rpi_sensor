@@ -51,17 +51,24 @@ class IrCommand(threading.Thread):
         if body == 'ac-on':
             result = self.irsend(self.device, 'power-on')
         elif body == 'ac-off':
-            result = self.irsend(self.device, 'power-offs')
+            result = self.irsend(self.device, 'power-off')
+        elif body == 'jet-on':
+            result = self.irsend(self.device, 'jet-on')
+        elif body == 'jet-off':
+            result = self.irsend(self.device, 'jet-off')
+        elif body == 'temp-18':
+            result = self.irsend(self.device, 'temperature-18')
         elif body == 'temp-26':
             result = self.irsend(self.device, 'temperature-26')
         else:
             result = 'Not supported command'
 
-        ch.basic_publish(exchange='',
-                         routing_key=props.reply_to,
-                         properties=pika.BasicProperties(correlation_id = \
-                                                         props.correlation_id),
-                         body=result)
+        if props.reply_to:
+            ch.basic_publish(exchange='',
+                             routing_key=props.reply_to,
+                             properties=pika.BasicProperties(correlation_id = \
+                                                             props.correlation_id),
+                             body=result)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def irsend(self, device, key):
